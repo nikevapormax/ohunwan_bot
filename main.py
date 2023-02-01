@@ -28,9 +28,9 @@ async def get_channel_id(channel_name: str):
 
 
 @app.put("/slack/update")
-async def update_message_reply(channel_id: str, message_ts: str, exercise_name: str):
+async def update_message_reply(channel_id: str, message_ts: str, exercise_name_count: str):
     # thread 내 bot user의 메세지 수정
-    slack_client.update_thread_message(channel_id=channel_id, message_ts=message_ts, exercise_name=exercise_name)
+    slack_client.update_thread_message(channel_id=channel_id, message_ts=message_ts, exercise_name_count=exercise_name_count)
     return {"status": "done"}
 
 
@@ -41,6 +41,7 @@ async def send_message_info_to_notion(channel_id: str, message_ts: str):
 
     info_list = slack_client.get_thread_reply_information(channel_id=channel_id, message_ts=message_ts)
     for info in info_list:
-        page_title_find.append(info["label"]["text"])
+        page_title_find.append(info["text"]["text"].split(" ")[0])
+        count.append(info["text"]["text"].split(" ")[1])
 
-    return {"page_title_find": page_title_find}
+    return {"page_title_find": page_title_find, "count": count}

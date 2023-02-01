@@ -49,19 +49,15 @@ class SlackAPI:
 
         return result
 
-    def update_thread_message(self, channel_id, message_ts, exercise_name):
+    def update_thread_message(self, channel_id, message_ts, exercise_name_count):
         new_block = {
-                "type": "input",
-                "element": {
-                    "type": "plain_text_input",
-                    "action_id": "plain_text_input-action",
-                },
-                "label": {
-                    "type": "plain_text",
-                    "text": exercise_name,
-                    "emoji": True,
-                },
+            "type": "section",
+            "text": {
+                "type": "plain_text",
+                "text": exercise_name_count,
+                "emoji": True
             }
+        }
         blocks.insert(-1, new_block)
 
         result = self.client.chat_update(
@@ -86,16 +82,10 @@ class SlackAPI:
             channel=channel_id,
             ts=message_ts,
         )
-        pprint(result.data["messages"][1]["blocks"][3:-1])
+
         return result.data["messages"][1]["blocks"][3:-1]
 
 
-token = os.environ["SLACK_TOKEN"]
-channel_id = os.environ["SLACK_CHANNEL_ID"]
-slack = SlackAPI(token)
-
-channel_name = "일반"
-query = "오운완"
 blocks = [
     {
         "type": "header",
@@ -108,9 +98,8 @@ blocks = [
     {
         "type": "section",
         "text": {
-            "type": "plain_text",
-            "text": ":tada: 운동횟수 또는 시간을 입력해주세요. :tada:",
-            "emoji": True
+            "type": "mrkdwn",
+            "text": ":tada: `운동이름 횟수(시간)` 양식으로 입력해주세요! :tada: \n",
         }
     },
     {
@@ -150,14 +139,3 @@ blocks = [
         }
     }
 ]
-
-
-# 채널ID 파싱
-channel_id = slack.get_channel_id(channel_name)
-# # 메세지ts 파싱
-message_ts = slack.get_message_ts(channel_id, query)
-# # 댓글 달기
-# slack.post_thread_message(channel_id, message_ts, text="오운완!!")
-# # 댓글 가져오기
-# slack.update_thread_message(channel_id, message_ts)
-slack.get_thread_reply_information(channel_id, message_ts)
