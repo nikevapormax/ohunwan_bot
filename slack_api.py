@@ -1,12 +1,4 @@
-from pprint import pprint
-
-import dotenv
-import os
-
 from slack_sdk import WebClient
-
-dotenv_file = dotenv.find_dotenv()
-dotenv.load_dotenv(dotenv_file)
 
 
 class SlackAPI:
@@ -55,8 +47,8 @@ class SlackAPI:
             "text": {
                 "type": "plain_text",
                 "text": exercise_name_count,
-                "emoji": True
-            }
+                "emoji": True,
+            },
         }
         blocks.insert(-1, new_block)
 
@@ -92,50 +84,50 @@ blocks = [
         "text": {
             "type": "plain_text",
             "text": "오운완",
-            "emoji": True
-        }
+            "emoji": True,
+        },
     },
     {
         "type": "section",
         "text": {
             "type": "mrkdwn",
             "text": ":tada: `운동이름 횟수(시간)` 양식으로 입력해주세요! :tada: \n",
-        }
+        },
     },
     {
         "type": "section",
         "text": {
             "type": "mrkdwn",
-            "text": "버튼을 눌러 운동을 추가해주세요! :arrow_right:"
+            "text": "버튼을 눌러 운동을 추가해주세요! :arrow_right:",
         },
         "accessory": {
             "type": "button",
             "text": {
                 "type": "plain_text",
                 "text": "운동 추가",
-                "emoji": True
+                "emoji": True,
             },
             "value": "click_me_123",
             "url": "https://127.0.0.1:8000/slack/update",
-            "action_id": "button-action"
-        }
+            "action_id": "button-action",
+        },
     },
     {
         "type": "section",
         "text": {
             "type": "mrkdwn",
-            "text": " "
+            "text": " ",
         },
         "accessory": {
             "type": "button",
             "text": {
                 "type": "plain_text",
                 "text": "등록",
-                "emoji": True
+                "emoji": True,
             },
             "value": "click_me_123",
             "url": "https://google.com",
-            "action_id": "button-action"
-        }
-    }
+            "action_id": "button-action",
+        },
+    },
 ]

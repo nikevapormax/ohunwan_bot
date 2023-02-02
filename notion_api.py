@@ -1,42 +1,95 @@
-import dotenv
-import os
+import datetime
 
 from notion_client import Client
-from pprint import pprint
-
-dotenv_file = dotenv.find_dotenv()
-dotenv.load_dotenv(dotenv_file)
-
-notion = Client(auth=os.environ["NOTION_SECRET_KEY"])
-pages = notion.search(filter={"property": "object", "value": "page"}, page_size=10)
 
 
-def update_notion(page_title_find: list, count: list):
-    for page in pages["results"]:
-        page_title = page["properties"]["title"]["title"][0]["plain_text"]
+class NotionAPI:
+    def __init__(self, auth):
+        self.client = Client(auth=auth)
 
-        if page_title in page_title_find:
-            revise_properties = page["properties"]
+    def create_database(self):
+        pages = self.client.search(filter={"property": "object", "value": "page"}, page_size=100)
 
-            del revise_properties["kind"]
-            del revise_properties["title"]
-            del revise_properties["count"]["id"]
-            del revise_properties["count"]["type"]
+        page_id = pages["results"][0]["id"]
+        parent_id = {"type": "page_id", "page_id": page_id}
+        today = datetime.datetime.now().strftime("%Y / %m / %d")
+        title_value = [{"type": "text", "text": {"content": today, "link": None}}]
+        icon_value = {"emoji": "🏋", "type": "emoji"}
 
-            revise_properties["count"]["number"] = count[page_title_find.index(page_title)]
+        property_values = {}
+        title_1 = {
+            "운동이름": {
+                "id": "title",
+                "name": "운동이름",
+                "title": {},
+                "type": "title",
+            }
+        }
+        title_2 = {
+            "횟수/시간": {
+                "name": "횟수/시간",
+                "rich_text": {},
+                "type": "rich_text",
+            }
+        }
+        property_values.update(title_1)
+        property_values.update(title_2)
 
-            notion.pages.update(page_id=page["id"], properties=revise_properties)
+        db = self.client.databases.create(
+            parent=parent_id,
+            title=title_value,
+            icon=icon_value,
+            properties=property_values
+        )
 
+        return db["id"]
 
-update_notion(count=[20, 20, 30])
-
-
-# cursor_id = pages["next_cursor"]
-# has_more = pages["has_more"]
-#
-# while has_more:
-#     pages = notion.search(filter={"property": "object", "value": "page"}, start_cursor=cursor_id)
-#
-#     has_more = pages["has_more"]
-#     if has_more:
-#         cursor_id = pages["next_cursor"]
+    def create_database_page(self, database_id: str, name_list: list, count_list: list):
+        for name, count in zip(name_list, count_list):
+            properties_new = {
+                "횟수/시간": {
+                    "rich_text": [
+                        {
+                            "annotations": {
+                                "bold": False,
+                                "code": False,
+                                "color": "default",
+                                "italic": False,
+                                "strikethrough": False,
+                                "underline": False,
+                            },
+                            "href": None,
+                            "plain_text": count,
+                            "text": {
+                                "content": count,
+                                "link": None,
+                            },
+                            "type": "text"}
+                    ],
+                    "type": "rich_text",
+                },
+                "운동이름": {
+                    "id": "title",
+                    "title": [
+                        {
+                            "annotations": {
+                                "bold": False,
+                                "code": False,
+                                "color": "default",
+                                "italic": False,
+                                "strikethrough": False,
+                                "underline": False,
+                            },
+                            "href": None,
+                            "plain_text": name,
+                            "text": {"content": name, "link": None},
+                            "type": "text",
+                        },
+                    ],
+                    "type": "title",
+                },
+            }
+            self.client.pages.create(
+                parent={"database_id": database_id},
+                properties=properties_new,
+            )
