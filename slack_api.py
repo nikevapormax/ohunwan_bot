@@ -108,7 +108,6 @@ blocks = [
                 "emoji": True,
             },
             "value": "click_me_123",
-            "url": "https://127.0.0.1:8000/slack/update",
             "action_id": "button-action",
         },
     },
@@ -126,8 +125,7 @@ blocks = [
                 "emoji": True,
             },
             "value": "click_me_123",
-            "url": "https://google.com",
-            "action_id": "button-action",
+            "action_id": "button-action-2",
         },
     },
 ]
