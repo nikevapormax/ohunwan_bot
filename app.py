@@ -1,3 +1,5 @@
+from pprint import pprint
+
 import dotenv
 import os
 
@@ -16,21 +18,15 @@ notion_client = NotionAPI(auth=os.environ["NOTION_SECRET_KEY"])
 
 @app.event("app_mention")
 def say_hello_to_use(event, say):
-    say(f"안녕하세요, <@{event['user']}> 님! `오운완`을 입력해주세요!")
-
-
-@app.message("오운완")
-def post_message_register_exercise(client, message):
-    channel_id = message["channel"]
-    client.chat_postMessage(
-        channel=channel_id,
+    say(f"안녕하세요, <@{event['user']}> 님!")
+    say(
         blocks=blocks,
         text="오운완",
     )
 
 
 @app.action("button-action")
-def handle_register_button_action(ack, client, body):
+def add_register_button_action(ack, client, body):
     ack()
 
     new_block = {
@@ -56,18 +52,29 @@ def handle_register_button_action(ack, client, body):
 
 
 @app.action("button-action-2")
-def post_message_content(ack, body):
+def post_message_content_to_notion(ack, body, say):
     ack()
 
     name_list = []
     count_list = []
+    error_cnt = 0
 
     for body_info in body["state"]["values"].items():
-        name_list.append(body_info[1]["plain_text_input-action"]["value"].split(" ")[0])
-        count_list.append(body_info[1]["plain_text_input-action"]["value"].split(" ")[1])
+        value = body_info[1]["plain_text_input-action"]["value"]
 
-    db_id = notion_client.create_database()
-    notion_client.create_database_page(database_id=db_id, name_list=name_list, count_list=count_list)
+        if value is not None:
+            name_list.append(value.split(" ")[0])
+            count_list.append(value.split(" ")[1])
+        else:
+            error_cnt += 1
+
+    if error_cnt >= 1:
+        say("`운동이름 횟수(시간)`을 입력해주세요!")
+    else:
+        db_id = notion_client.get_database_id()
+        notion_client.create_database_page(database_id=db_id, name_list=name_list, count_list=count_list)
+
+        say("`노션`에 입력하신 운동정보가 등록되었습니다! `노션에서 확인`해주세요!")
 
 
 # Start your app
