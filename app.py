@@ -59,22 +59,25 @@ def post_message_content_to_notion(ack, body, say):
     count_list = []
     error_cnt = 0
 
-    for body_info in body["state"]["values"].items():
-        value = body_info[1]["plain_text_input-action"]["value"]
+    if body["state"]["values"]:
+        for body_info in body["state"]["values"].items():
+            value = body_info[1]["plain_text_input-action"]["value"]
 
-        if value is not None:
-            name_list.append(value.split(" ")[0])
-            count_list.append(value.split(" ")[1])
+            if value is not None:
+                name_list.append(value.split(" ")[0])
+                count_list.append(value.split(" ")[1])
+            else:
+                error_cnt += 1
+
+        if error_cnt >= 1:
+            say("`운동이름 횟수(시간)`을 입력해주세요!")
         else:
-            error_cnt += 1
+            db_id = notion_client.get_database_id()
+            notion_client.create_database_page(database_id=db_id, name_list=name_list, count_list=count_list)
 
-    if error_cnt >= 1:
-        say("`운동이름 횟수(시간)`을 입력해주세요!")
+            say("`노션`에 입력하신 운동정보가 등록되었습니다! `노션에서 확인`해주세요!")
     else:
-        db_id = notion_client.get_database_id()
-        notion_client.create_database_page(database_id=db_id, name_list=name_list, count_list=count_list)
-
-        say("`노션`에 입력하신 운동정보가 등록되었습니다! `노션에서 확인`해주세요!")
+        say("`운동이름 횟수(시간)`을 입력해주세요!")
 
 
 # Start your app
